@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.amg.mall.dao.I_MallShoppingCartDao">
+	
+	<resultMap id="BaseResultMap" type="com.amg.mall.domain.MallShoppingCart">
+		<id column="cart_item_id" jdbcType="BIGINT" property="cartItemId"></id>
+		<result column="user_id" jdbcType="INTEGER" property="userId"></result>
+		<result column="goods_id" jdbcType="BIGINT" property="goodsId"></result>
+		<result column="goods_count" jdbcType="INTEGER" property="goodsCount"></result>
+		<result column="create_time" jdbcType="TIMESTAMP" property="createTime"></result>
+		<result column="update_time" jdbcType="TIMESTAMP" property="updateTime"></result>
+		<result column="is_deleted" jdbcType="TINYINT" property="isDeleted"></result>
+	</resultMap>
+	
+	<sql id="Base_Column_List">
+		cart_item_id,user_id,goods_id,goods_count,
+		create_time,update_time,is_deleted
+	</sql>
+	<select id="findShoppingCartByUserId" resultMap="BaseResultMap">
+		select
+		<include refid="Base_Column_List"></include>
+		from shopping_cart_item
+		where user_id = #{user_id} and is_deleted = 0
+		limit #{number};
+	</select>
+	
+	<select id="findShopCartByGoodsIdAndUserId" resultMap="BaseResultMap">
+		select
+		<include refid="Base_Column_List"></include>
+		from shopping_cart_item
+		where goods_id = #{goodsId}
+		and user_id = #{userId} and is_deleted = 0;
+	</select>
+	
+	<select id="findCountByUserId" resultType="java.lang.Integer" parameterType="java.lang.Integer">
+		select
+		count(*)
+		from shopping_cart_item
+		where user_id = #{userId} and is_deleted = 0;
+	</select>
+	
+<!--	<insert id="insert" parameterMap="com.amg.mall.domain.MallShoppingCart">-->
+<!--		insert into shopping_cart_item(cart_item_id,user_id,goods_id,goods_count-->
+<!--		create_time,update_time,is_deleted)-->
+<!--		values (#{cartItemId},#{userId},#{goodsId},#{goodsCount},-->
+<!--		createTime,updateTime,isDeleted);-->
+<!--	</insert>-->
+	
+	<insert id="saveGoodsToShopCart" parameterType="com.amg.mall.domain.MallShoppingCart">
+		insert into shopping_cart_item
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="cartItemId != null">
+				cart_item_id,
+			</if>
+			<if test="userId != null">
+				user_id,
+			</if>
+			<if test="goodsId != null">
+				goods_id,
+			</if>
+			<if test="goodsCount != null">
+				goods_count,
+			</if>
+			<if test="isDeleted != null">
+				is_deleted,
+			</if>
+			<if test="createTime != null">
+				create_time,
+			</if>
+			<if test="updateTime != null">
+				update_time,
+			</if>
+		</trim>
+		<trim prefix="values(" suffix=")" suffixOverrides=",">
+			<if test="cartItemId != null">
+				#{cartItemId,jdbcType=BIGINT},
+			</if>
+			<if test="userId != null">
+				#{userId,jdbcType=INTEGER},
+			</if>
+			<if test="goodsId != null">
+				#{goodsId,jdbcType=BIGINT},
+			</if>
+			<if test="goodsCount != null">
+				#{goodsCount},
+			</if>
+			<if test="isDeleted != null">
+				#{isDeleted,jdbcType=TINYINT},
+			</if>
+			<if test="createTime != null">
+				#{createTime,jdbcType=TIMESTAMP},
+			</if>
+			<if test="updateTime != null">
+				#{updateTime,jdbcType=TIMESTAMP},
+			</if>
+		</trim>
+	</insert>
+	
+	<select id="findShopCartByPrimaryKey" parameterType="java.lang.Long" resultMap="BaseResultMap">
+		select
+		<include refid="Base_Column_List"></include>
+		from shopping_cart_item
+		where cart_item_id = #{cartItemId} and is_deleted = 0;
+	</select>
+	
+	<update id="updateByPrimaryKey" parameterType="com.amg.mall.domain.MallShoppingCart">
+		update shopping_cart_item
+		<set>
+			<if test="userId != null">
+				user_id = #{userId,jdbcType=BIGINT},
+			</if>
+			<if test="goodsId != null">
+				goods_id = #{goodsId,jdbcType=INTEGER},
+			</if>
+			<if test="goodsCount != null">
+				goods_count = #{goodsCount},
+			</if>
+			<if test="isDeleted != null">
+				is_deleted = #{isDeleted,jdbcType=TINYINT},
+			</if>
+			<if test="createTime != null">
+				create_time = #{createTime,jdbcType=TIMESTAMP},
+			</if>
+			<if test="updateTime != null">
+				update_time = #{updateTime,jdbcType=TIMESTAMP},
+			</if>
+		</set>
+		where cart_item_id = #{cartItemId,jdbcType=BIGINT};
+	</update>
+	
+	<!-- 删除操作并不需要真的把数据删除掉，而只需要修改一个字段，数据留着兴许还会有作用 -->
+	<update id="deleteShopCartItemByPrimaryKey" parameterType="java.lang.Long">
+		update shopping_cart_item
+		set is_deleted = 1
+		where cart_item_id = #{mallShoppingCartItemId} and is_deleted = 0;
+	</update>
+	
+	<select id="findShopCartByPrimaryKeyAndUserId" resultMap="BaseResultMap">
+		select
+		<include refid="Base_Column_List"></include>
+		from shopping_cart_item
+		where cart_item_id = #{shopCartId} and user_id = #{userId} and is_deleted = 0;
+	</select>
+	
+	<update id="deleteShopCartItemByPrimaryKeys">
+		update shopping_cart_item
+		set is_deleted = 2
+		where cart_item_id in
+		<foreach collection="list" item="id" open="(" separator="," close=")">
+			 #{id}
+		</foreach>
+	</update>
+</mapper>

@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:mvc="http://www.springframework.org/schema/mvc"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="
+        http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/mvc
+        http://www.springframework.org/schema/mvc/spring-mvc.xsd
+        http://www.springframework.org/schema/context
+        http://www.springframework.org/schema/context/spring-context.xsd">
+
+    <!--    开启springMVC注解扫描，不过仅仅扫描controller-->
+    <context:component-scan base-package="com.amg">
+        <context:include-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
+    </context:component-scan>
+
+    <!--    开启springMVC对注解支持-->
+    <mvc:annotation-driven></mvc:annotation-driven>
+
+    <!--    对静态资源进行放行-->
+    <mvc:resources mapping="/css/**" location="/css/"></mvc:resources>
+    <mvc:resources mapping="/js/**" location="/js/"></mvc:resources>
+    <mvc:resources mapping="/image/**" location="/image/"></mvc:resources>
+    <mvc:default-servlet-handler></mvc:default-servlet-handler>
+
+    <!--    配置视图解析器-->
+    <bean id="internalResourceViewResolver" class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+        <property name="prefix" value="/WEB-INF/pages/"></property>
+        <property name="suffix" value=".jsp"></property>
+    </bean>
+
+
+    <!--    拦截器-->
+    <mvc:interceptors>
+        <!--        商城登录拦截器-->
+        <mvc:interceptor>
+            <!-- 拦截的路径-->
+            <mvc:mapping path="/personal"/>
+            <mvc:mapping path="/personal/updateInfo"/>
+            <mvc:mapping path="/order/**"/>
+            <mvc:mapping path="/goods/detail/**"/>
+            <mvc:mapping path="/shop-cart/**/**"/>
+            <mvc:mapping path="/shop-cart/settle/**"/>
+            <mvc:mapping path="/saveOrder/**"/>
+            <mvc:mapping path="/selectPayType/**"/>
+            <mvc:mapping path="/payPage/**"/>
+            <!-- 放行路径-->
+<!--            <mvc:exclude-mapping path="/index"/>-->
+            <mvc:exclude-mapping path="/register"/>
+            <mvc:exclude-mapping path="/logout"/>
+            <mvc:exclude-mapping path="/login"/>
+            <bean id="mallLoginInterceptor" class="com.amg.mall.interceptor.MallLoginInterceptor"></bean>
+        </mvc:interceptor>
+        
+        <!-- 购物车数量统一管理 -->
+        <mvc:interceptor>
+            <!-- 拦截路径 -->
+            <mvc:mapping path="/index"/>
+            <mvc:mapping path="/login"/>
+            <mvc:mapping path="/index/**"/>
+            <mvc:mapping path="/personal/**"/>
+            <mvc:mapping path="/order/**"/>
+            <mvc:mapping path="/shop-cart/**"/>
+            <mvc:mapping path="/goods/detail/**"/>
+            <mvc:mapping path="/saveOrder/**"/>
+            <!-- 放行路径 -->
+            <bean id="mallCartNumInterceptor" class="com.amg.mall.interceptor.MallCartNumInterceptor"></bean>
+        </mvc:interceptor>
+    </mvc:interceptors>
+
+</beans>

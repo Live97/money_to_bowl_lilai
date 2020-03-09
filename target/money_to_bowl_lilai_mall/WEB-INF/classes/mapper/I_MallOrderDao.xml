@@ -1,0 +1,246 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.amg.mall.dao.I_MallOrderDao">
+
+    <resultMap id="BaseOrderMap" type="com.amg.mall.domain.MallOrder">
+        <id column="order_id" property="order_id" jdbcType="INTEGER"></id>
+        <result column="user_id" property="user_id" jdbcType="BIGINT"></result>
+        <result column="total_price" property="total_price" jdbcType="INTEGER"></result>
+        <result column="order_number" property="order_number" jdbcType="VARCHAR"></result>
+        <result column="extra_info" property="extra_info" jdbcType="VARCHAR"></result>
+        <result column="user_name" property="user_name" jdbcType="VARCHAR"></result>
+        <result column="user_phone" property="user_phone" jdbcType="VARCHAR"></result>
+        <result column="user_address" property="user_address" jdbcType="VARCHAR"></result>
+        <result column="pay_status" property="pay_status" jdbcType="TINYINT"></result>
+        <result column="pay_type" property="pay_type" jdbcType="TINYINT"></result>
+        <result column="order_status" property="order_status" jdbcType="TINYINT"></result>
+        <result column="is_deleted" property="is_deleted" jdbcType="TINYINT"></result>
+        <result column="pay_time" property="pay_time" jdbcType="TIMESTAMP"></result>
+        <result column="create_time" property="create_time" jdbcType="TIMESTAMP"></result>
+        <result column="update_time" property="update_time" jdbcType="TIMESTAMP"></result>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+    order_id, order_number, user_id, total_price, pay_status, pay_type, pay_time, order_status,
+    extra_info, user_name, user_phone, user_address, is_deleted, create_time, update_time
+    </sql>
+
+    <!--    获取订单总记录数-->
+    <select id="getTotalMallOrders" parameterType="Map" resultType="java.lang.Integer">
+        select count(*) from mall_order
+        <where>
+            <if test="order_number != null and order_number != ''">
+                and order_number = #{order_number}
+            </if>
+            <if test="user_id != null and user_id !=''">
+                and user_id = #{user_id}
+            </if>
+            <if test="pay_type != null and pay_type!=''">
+                and pay_type = #{pay_type}
+            </if>
+            <if test="order_status != null and order_status != ''">
+                and order_status = #{order_status}
+            </if>
+            <if test="is_deleted != null and is_deleted != ''">
+                and is_deleted = #{is_deleted}
+            </if>
+            <if test="startTime != null and startTime.trim() != ''">
+                and create_time &gt; #{startTime}
+            </if>
+            <if test="endTime != null and endTime.trim() != ''">
+                and create_time &lt; #{endTime}
+            </if>
+        </where>
+    </select>
+
+    <!--  获取订单-->
+    <select id="findMallOrderList" parameterType="Map" resultMap="BaseOrderMap">
+        select
+        <include refid="Base_Column_List"></include>
+        from mall_order
+        <where>
+            <if test="order_number != null and order_number != ''">
+                and order_number = #{order_number}
+            </if>
+            <if test="user_id != null and user_id !=''">
+                and user_id = #{user_id}
+            </if>
+            <if test="pay_type != null and pay_type!=''">
+                and pay_type = #{pay_type}
+            </if>
+            <if test="order_status != null and order_status != ''">
+                and order_status = #{order_status}
+            </if>
+            <if test="is_deleted != null and is_deleted != ''">
+                and is_deleted = #{is_deleted}
+            </if>
+            <if test="startTime != null and startTime.trim() != ''">
+                and create_time &gt; #{startTime}
+            </if>
+            <if test="endTime != null and endTime.trim() != ''">
+                and create_time &lt; #{endTime}
+            </if>
+        </where>
+        order by create_time desc
+        <if test="start != null and  limit != null">
+            limit #{start},#{limit}
+        </if>
+    </select>
+    
+    <insert id="insertSelective" parameterType="com.amg.mall.domain.MallOrder" useGeneratedKeys="true" keyProperty="order_id">
+        insert into mall_order
+        <trim prefix="(" suffixOverrides="," suffix=")">
+            <if test="order_id !=null and order_id != ''">
+                order_id
+            </if>
+            <if test="order_number != null and order_number != ''">
+                order_number,
+            </if>
+            <if test="user_id != null and user_id != ''">
+                user_id,
+            </if>
+            <if test="pay_status != null">
+                pay_status,
+            </if>
+            <if test="pay_type != null">
+                pay_type,
+            </if>
+            <if test="pay_time != null">
+                pay_time,
+            </if>
+            <if test="order_status != null">
+                order_status,
+            </if>
+            <if test="extra_info != null">
+                extra_info,
+            </if>
+            <if test="user_name != null">
+                user_name,
+            </if>
+            <if test="user_phone != null">
+                user_phone,
+            </if>
+            <if test="user_address != null and user_address != ''">
+                user_address,
+            </if>
+            <if test="create_time != null">
+                create_time,
+            </if>
+            <if test="update_time != null">
+                update_time,
+            </if>
+            <if test="total_price != null">
+                total_price,
+            </if>
+            <if test="is_deleted != null">
+                is_deleted,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="order_id !=null and order_id != ''">
+                #{order_id},
+            </if>
+            <if test="order_number != null and order_number != ''">
+                #{order_number},
+            </if>
+            <if test="user_id != null and user_id != ''">
+                #{user_id},
+            </if>
+            <if test="pay_status != null">
+                #{pay_status},
+            </if>
+            <if test="pay_type != null">
+                #{pay_type},
+            </if>
+            <if test="pay_time != null">
+                #{pay_time},
+            </if>
+            <if test="order_status != null">
+                #{order_status},
+            </if>
+            <if test="extra_info != null">
+                #{extra_info},
+            </if>
+            <if test="user_name != null">
+                #{user_name},
+            </if>
+            <if test="user_phone != null">
+                #{user_phone},
+            </if>
+            <if test="user_address != null and user_address != ''">
+                #{user_address},
+            </if>
+            <if test="create_time != null">
+                #{create_time},
+            </if>
+            <if test="update_time != null">
+                #{update_time},
+            </if>
+            <if test="total_price != null">
+                #{total_price},
+            </if>
+            <if test="is_deleted != null">
+                #{is_deleted},
+            </if>
+        </trim>
+    </insert>
+    
+    
+    <select id="selectByOrderNo" parameterType="string" resultMap="BaseOrderMap">
+        select
+        <include refid="Base_Column_List"></include>
+        from mall_order
+        where order_number = #{orderNo} and is_deleted = 0;
+    </select>
+    
+    <update id="updateMallOrderInfoByPrimaryKey" parameterType="com.amg.mall.domain.MallOrder">
+        -- 为了可以复用，尽量写得格式化一点
+        update mall_order
+        <set>
+            <if test="order_id != null">
+                order_id = #{order_id},
+            </if>
+            <if test="user_id != null">
+                user_id = #{user_id},
+            </if>
+            <if test="total_price != null">
+                total_price = #{total_price},
+            </if>
+            <if test="order_number != null and order_number != ''">
+                order_number = #{order_number},
+            </if>
+            <if test="extra_info != null and extra_info != ''">
+                extra_info = #{extra_info},
+            </if>
+            <if test="user_name != null and user_name != ''">
+                user_name = #{user_name},
+            </if>
+            <if test="user_address != null and user_address != ''">
+                user_address = #{user_address},
+            </if>
+            <if test="pay_status != null">
+                pay_status = #{pay_status},
+            </if>
+            <if test="pay_type != null">
+                pay_type = #{pay_type},
+            </if>
+            <if test="order_status != null">
+                order_status = #{order_status},
+            </if>
+            <if test="is_deleted != null">
+                is_deleted = #{is_deleted},
+            </if>
+            <if test="pay_time != null">
+                pay_time = #{pay_time},
+            </if>
+            <if test="create_time != null">
+                create_time = #{create_time},
+            </if>
+            <if test="update_time != null">
+                update_time = #{update_time},
+            </if>
+        </set>
+        where order_id = #{order_id}
+    </update>
+</mapper>

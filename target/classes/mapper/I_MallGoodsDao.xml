@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.amg.mall.dao.I_MallGoodsDao">
+	
+	<resultMap id="BaseResultMap" type="com.amg.mall.domain.MallGoods">
+		<id column="goods_id" jdbcType="BIGINT" property="goodsId"/>
+		<result column="goods_name" jdbcType="VARCHAR" property="goodsName"/>
+		<result column="goods_introduction" jdbcType="VARCHAR" property="goodsIntro"/>
+		<result column="goods_category_id" jdbcType="BIGINT" property="goodsCategoryId"/>
+		<result column="goods_carousel" jdbcType="VARCHAR" property="goodsCarousel"/>
+		<result column="goods_main_img" jdbcType="VARCHAR" property="goodsCoverImg"/>
+		<result column="goods_original_price" jdbcType="INTEGER" property="originalPrice"/>
+		<result column="goods_selling_price" jdbcType="INTEGER" property="sellingPrice"/>
+		<result column="goods_stock_num" jdbcType="INTEGER" property="stockNum"/>
+		<result column="goods_tag" jdbcType="VARCHAR" property="tag"/>
+		<result column="goods_sell_status" jdbcType="TINYINT" property="goodsSellStatus"/>
+		<result column="goods_create_user" jdbcType="INTEGER" property="createUser"/>
+		<result column="goods_create_time" jdbcType="TIMESTAMP" property="createTime"/>
+		<result column="goods_update_user" jdbcType="INTEGER" property="updateUser"/>
+		<result column="goods_update_time" jdbcType="TIMESTAMP" property="updateTime"/>
+	</resultMap>
+	<resultMap id="ResultMapWithBLOBs" extends="BaseResultMap" type="com.amg.mall.domain.MallGoods">
+		<result column="goods_detail_content" jdbcType="LONGVARCHAR" property="goodsDetailContent"></result>
+	</resultMap>
+	<sql id="Base_Column_List">
+		goods_id,goods_name,goods_introduction,goods_category_id,goods_carousel,goods_main_img,
+		goods_main_img,goods_original_price,goods_selling_price,goods_stock_num,goods_tag,
+		goods_sell_status,goods_create_user,goods_create_time,goods_update_user,goods_update_time
+	</sql>
+	<sql id="Base_detail_content">
+		goods_detail_content
+	</sql>
+	
+	<select id="findGoodsByPrimaryKeys" resultMap="BaseResultMap">
+		select
+		<include refid="Base_Column_List"></include>
+		from mall_goods_info
+		where goods_id in
+		<foreach item="id" collection="list" open="(" separator="," close=")">
+			#{id}
+		</foreach>
+		order by field(goods_id,
+		<foreach item="id" collection="list" separator=",">
+			#{id}
+		</foreach>
+		);
+	</select>
+	
+	
+	<select id="findGoodsByPrimaryKey" resultMap="ResultMapWithBLOBs" parameterType="java.lang.Long">
+		select
+		<include refid="Base_Column_List"></include>,
+		<include refid="Base_detail_content"></include>
+		from mall_goods_info
+		where goods_id = #{goodsId};
+	</select>
+	
+	<select id="findGoodsByKeyWord" parameterType="java.util.Map" resultMap="BaseResultMap">
+		select
+		<include refid="Base_Column_List"></include>
+		from mall_goods_info
+		<where>
+			<if test="keyword!=null and keyword!=''">
+				and (goods_name like CONCAT('%',#{keyword},'%') or goods_introduction like CONCAT('%',#{keyword},'%'))
+			</if>
+		</where>
+		<if test="orderBy!=null and orderBy!=''">
+			<choose>
+				<when test="orderBy == 'new'">
+					<!-- 按照发布时间倒序排列 -->
+					order by goods_id desc
+				</when>
+				<when test="orderBy == 'minPrice'">
+					<!-- 按照售价从小到大排列 -->
+					order by selling_price asc
+				</when>
+				<when test="orderBy == 'maxPrice'">
+					order by goods_selling_price desc
+				</when>
+				<otherwise>
+					<!-- 默认按照库存数量从大到小排列 -->
+					order by goods_stock_num desc
+				</otherwise>
+			</choose>
+		</if>
+		-- todo 特意将start写反，什么时候想做分页的话就来修改回来吧
+		<if test="strat != null and limit != null">
+			limit #{start},#{limit}
+		</if>
+	</select>
+	
+	<select id="getGoodsCountByKeyWord" resultType="java.lang.Integer" parameterType="Map">
+		select count(*)
+		from mall_goods_info
+		<where>
+			<if test="keyword != null and keyword != ''">
+				and (goods_name like CONCAT('%',#{keyword},'%') or goods_introduction like CONCAT('%',#{keyword},'%'))
+			</if>
+		</where>
+	</select>
+	
+	
+
+	<!--	这个List遍历有点问题啊！！！ -->
+	<update id="updateStockNum">
+		<foreach collection="list" item="stockNumDTO" open="" close="" separator=";">
+			update mall_goods_info
+			<set>
+				goods_stock_num = #{stockNumDTO.goodsCount}
+			</set>
+			<where>
+				goods_id = #{stockNumDTO.goodsId} and goods_stock_num >= #{stockNumDTO.goodsCount} and goods_sell_status = 0
+			</where>
+		</foreach>
+		
+	</update>
+</mapper>
